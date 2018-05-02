@@ -6,30 +6,94 @@
 <!-- include ar.js for A-Frame -->
 <script src="https://jeromeetienne.github.io/AR.js/aframe/build/aframe-ar.js"></script>
 <script>
-	AFRAME.registerComponent('print-position', {
+  AFRAME.registerComponent('follow', {
+    schema: {
+      target: {type: 'selector'},
+      speed: {type: 'number'}
+    },
+
+    init: function () {
+      this.directionVec3 = new THREE.Vector3();
+    },
+
+    tick: function (time, timeDelta) {
+      var directionVec3 = this.directionVec3;
+
+      // Grab position vectors (THREE.Vector3) from the entities' three.js objects.
+      var targetPosition = this.data.target.object3D.position;
+      var currentPosition = this.el.object3D.position;
+
+      // Subtract the vectors to get the direction the entity should head in.
+      directionVec3.copy(targetPosition).sub(currentPosition);
+
+      // Calculate the distance.
+      var distance = directionVec3.length();
+
+      // Don't go any closer if a close proximity has been reached.
+      if (distance < 1) { return; }
+
+      // Scale the direction vector's magnitude down to match the speed.
+      var factor = this.data.speed / distance;
+      ['x', 'y', 'z'].forEach(function (axis) {
+        directionVec3[axis] *= factor * (timeDelta / 1000);
+      });
+
+      // Translate the entity in the direction towards the target.
+      this.el.setAttribute('position', {
+        x: currentPosition.x + directionVec3.x,
+        y: currentPosition.y + directionVec3.y,
+        z: currentPosition.z + directionVec3.z
+      });
+    }
+  });
+	AFRAME.registerComponent('measure', {
+    schema: {
+      targetA: {type: 'selector'},
+      targetB: {type: 'selector'},
+      output: {type: 'selector'},
+    },
+		init: function () {
+      this.directionVec3 = new THREE.Vector3();
+      console.log(this.data.targetA)
+    },
     tick: function() {
-      const targetPosition = document.getElementById('hero').object3D.position;
-      const targetText = document.getElementById('text');
-      targetText.setAttribute('value', JSON.stringify(targetPosition, null, 3));
+      const posA = this.data.targetA.object3D.position;
+      const posB = this.data.targetB.object3D.position;
+
+      const directionVec3 = this.directionVec3;
+
+      directionVec3.copy(posA).sub(posB);
+
+      const distance = directionVec3.length();
+
+      this.data.output.setAttribute('value', distance);
     }
 	});
 </script>
 <body style='margin : 0px; overflow: hidden;'>
   <a-scene embedded arjs>
     
-	<a-marker type='pattern' url='https://10.0.7.40:8080/dnd.patt'>
-		<!-- create your content here. just a box for now -->
-		<a-text value="4 Life" rotation="-90 360 0" ></a-text>
-    <a-box position='0 0.5 0' material='opacity: 0.5;'></a-box>
-	</a-marker>
+	<a-marker type='pattern' url='https://10.0.7.40:8080/a-marker.patt'>
+		<a-text value="kjyufkjuhgf" rotation="-90 360 0" id="output" color="red" ></a-text>
+  </a-marker>
+    
+	<a-marker type='pattern' url='https://10.0.7.40:8080/dnd.patt' id="dnd">
+    <a-box position='0 0.5 0' material='opacity: 0.5;' color="red"></a-box>
+  </a-marker>
 
 	<a-marker preset="hiro" id="hero">
-		<!-- create your content here. just a box for now -->
-    <a-entity print-position="selector: #hero;"></a-entity>
-		<a-text id="text" value="Heroes" rotation="-90 360 0"  look-controls></a-text>
+    <a-box position='0 0.5 0' material='opacity: 0.5;' color="blue"></a-box>
 	</a-marker>
-	
-    <a-entity camera></a-entity>
+  <a-entity
+    follow="target: #hero; speed: 1;"
+  >
+    <a-box position='0 0.5 0' material='opacity: 0.5;' color="green"></a-box>
+  </a-entity>
+  <a-entity camera></a-entity>
+  <a-entity
+    measure="targetA: #dnd; targetB: #hero; output: #output"
+  >
+  </a-entity>
   </a-scene>
 </body>
 </html>
