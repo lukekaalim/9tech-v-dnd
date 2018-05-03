@@ -1,26 +1,86 @@
 const VECTOR_ZERO = new THREE.Vector3();
 
+const getRelativeVectorOfObject = (sourceObject, targetVector) => (
+  new THREE.Vector3()
+    .copy(sourceObject.position)
+    .sub(targetVector)
+    .applyQuaternion(
+      new THREE.Quaternion()
+        .copy(sourceObject.quaternion)
+        .inverse()
+    )
+    .negate()
+);
+
+const averageVectorsFromElements = elements => (
+  elements.reduce((acc, cur) => acc.add(cur.object3D.position), new THREE.Vector3()).divideScalar(elements.length)
+);
+
+const averageVectors = vectors => (
+  vectors.reduce((acc, cur) => acc.add(cur), new THREE.Vector3()).divideScalar(vectors.length)
+);
+
+const getPositionVectorFromObject = object3D => object3D.position;
+
 const dndTable = {
   schema: {
     legs: { type: 'array', default: [] },
     tableCenter: { type: 'selector' },
   },
   init: function() {
-    this.legElements = this.data.legs.map(legSelector => document.querySelector(legSelector));
-    this.registerButton = document.getElementById('registerTableButton');
-    this.registering = false;
-    this.registerButton.addEventListener('click', () => {
-      this.registering = !this.registering;
-    });
+    this.data.initalCenter = new THREE.Vector3();
+    this.data.registerSamples = [];
+    this.data.supportingLegs = [];
+    this.data.registering = false;
+    this.addSample = AFRAME.utils.throttle(this.addSample, 200, this);
+
+    this.data.legElements = this.data.legs.map(legSelector => document.querySelector(legSelector));
+    this.data.registerButton = document.getElementById('registerTableButton');
+    this.data.registerButton.addEventListener('click', () => this.toggleRegistering());
+  },
+  toggleRegistering: function() {
+    this.data.registering = !this.data.registering;
+    if (this.data.registering) {
+      this.data.registerSamples = [];
+      this.data.supportingLegs = [];
+      this.data.registerButton.innerText = 'Click to Stop Registering Table';
+      this.data.supportingLegs = this.data.legElements.filter(leg => leg && leg.getAttribute('visible'));
+    } else {
+      this.data.registerButton.innerText = 'Click To Start Registering Table';
+      this.data.supportingLegs.forEach(leg => {
+        const legId = leg.getAttribute('id');
+        const existingSamples = this.data.registerSamples
+          .map(sample => sample[legId])
+          .filter(Boolean);
+        const averagePosition = averageVectors(existingSamples);
+        leg.setAttribute('table-leg', 'tableCenterOffset', averagePosition);
+      });
+    }
+  },
+  addSample: function() {
+    this.data.supportingLegs = this.data.legElements.filter(leg => leg && leg.getAttribute('visible'));
+    this.data.center = averageVectorsFromElements(this.data.supportingLegs);
+    this.data.registerSamples.push(
+      this.data.supportingLegs.reduce((acc, cur) => {
+        if (!cur.getAttribute('visible') || cur.object3D.position.equals(VECTOR_ZERO)) {
+          return acc;
+        }
+        return ({
+          ...acc,
+          [cur.getAttribute('id')]: getRelativeVectorOfObject(cur.object3D, this.data.center)
+        });
+      }, {})
+    );
   },
   tick: function() {
-    const visibleLegElements = this.legElements.filter(leg => leg.getAttribute('visible'));
-    if (this.registering)  {
-      const center = visibleLegElements
+    if (this.data.registering)  {
+      this.addSample();
+      /*
+      const center = this.supportingLegs
         .reduce((acc, curr) => acc.add(curr.object3D.position), new THREE.Vector3() )
-        .divideScalar(visibleLegElements.length);
+        .divideScalar(this.supportingLegs.length);
       
-      visibleLegElements.map(leg => {
+        this.supportingLegs.map(leg => {
         const quaternion = new THREE.Quaternion()
           .copy(leg.object3D.quaternion)
           .inverse();
@@ -36,8 +96,10 @@ const dndTable = {
           relativeToCenter
         );
       });
+      */
     }
-    const visibleAndSupportedLegElements = visibleLegElements.filter(leg => {
+    
+    const visibleAndSupportedLegElements = this.data.supportingLegs.filter(leg => {
       const tableLeg = leg.getAttribute('table-leg');
       return tableLeg && tableLeg.tableCenterOffset;
     });
@@ -45,12 +107,12 @@ const dndTable = {
         .reduce((acc, curr) => acc
           .add(curr.object3D.position)
           .add(curr.getAttribute('table-leg').tableCenterOffset),
-        new THREE.Vector3() )
+        new THREE.Vector3())
         .divideScalar(visibleAndSupportedLegElements.length);
     
     this.data.tableCenter.object3D.position.copy(averagePosition);
-    if(visibleLegElements.length > 0) {
-      this.data.tableCenter.object3D.quaternion.copy(visibleLegElements[0].object3D.quaternion);
+    if(this.data.supportingLegs.length > 0) {
+      this.data.tableCenter.object3D.quaternion.copy(this.data.supportingLegs[0].object3D.quaternion);
     }
   }
 };
@@ -67,12 +129,15 @@ const tablePiece = {
   tick: function () {
     const tablePosition = this.data.table.object3D.position;
     const markerPosition = this.data.marker.object3D.position;
+    const quaternion = new THREE.Quaternion()
+          .copy(this.data.table.object3D.quaternion)
+          .inverse();
     this.markerOffsetFromTable
-      .copy(markerPosition)
-      .sub(tablePosition)
-      .negate()
+      .copy(tablePosition)
+      .sub(markerPosition)
+      .applyQuaternion(quaternion)
       .multiply(new THREE.Vector3(1, 0, 1))
-      .floor();
+      .negate();
     this.el.object3D.position.copy(this.markerOffsetFromTable)
   },
 }
@@ -80,6 +145,7 @@ AFRAME.registerComponent('table-piece', tablePiece);
 
 const tableLeg = {
   schema: {
+    id: { style: 'string' },
     tableCenterOffset: { type: 'vec3', default: null },
   },
   init: function() {
