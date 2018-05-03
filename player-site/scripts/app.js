@@ -19,8 +19,7 @@ const dndTable = {
       const center = visibleLegElements
         .reduce((acc, curr) => acc.add(curr.object3D.position), new THREE.Vector3() )
         .divideScalar(visibleLegElements.length);
-      const tableRotation = visibleLegElements
-      .reduce((acc, curr) => acc.add(curr.object3D.position), new THREE.Quaternion() )
+      
       visibleLegElements.map(leg => {
         const quaternion = new THREE.Quaternion()
           .copy(leg.object3D.quaternion)
@@ -50,6 +49,9 @@ const dndTable = {
         .divideScalar(visibleAndSupportedLegElements.length);
     
     this.data.tableCenter.object3D.position.copy(averagePosition);
+    if(visibleLegElements.length > 0) {
+      this.data.tableCenter.object3D.quaternion.copy(visibleLegElements[0].object3D.quaternion);
+    }
   }
 };
 AFRAME.registerComponent('dnd-table', dndTable);
