@@ -1,0 +1,21 @@
+{
+  "name": "9tech-v-dnd",
+  "version": "1.0.0",
+  "description": "Augmented Dungeons and Dragons",
+  "scripts": {
+    "start": "http-server ./player-site -S"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lukekaalim/9tech-v-dnd.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lukekaalim/9tech-v-dnd/issues"
+  },
+  "homepage": "https://github.com/lukekaalim/9tech-v-dnd#readme",
+  "devDependencies": {
+    "http-server": "^0.11.1"
+  }
+}

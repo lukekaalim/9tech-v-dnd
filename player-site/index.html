@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+	<head>
+    <title>V-D&D</title>
+    <meta charset="utf-8" />
+    <script src="https://aframe.io/releases/0.8.0/aframe.min.js"></script>
+    <script src="https://jeromeetienne.github.io/AR.js/aframe/build/aframe-ar.js"></script> 
+    <script src="./scripts/app.js"></script>
+  </head>
+  <body style='margin : 0px; overflow: hidden;'>
+    <button id="registerTableButton" style="position: absolute; top: 0; left: 0; padding: 20px; z-index: 10">Toggle Register Table</button>
+    <a-scene embedded arjs='debugUIEnabled: false; detectionMode: color_and_matrix'>
+      <!--a-marker
+        type="pattern"
+        url="https://10.0.7.40:8080/markers/dwarf-paladin/dwarf-paladin-marker2.patt"
+        size="0.064"
+      >
+        <a-box position='0 0.5 0' color="red"></a-box>
+      </a-marker>
+      <a-marker
+        type="pattern"
+        url="https://10.0.7.40:8080/markers/human-fighter/human-fighter-marker.patt"
+        size="0.048"
+        id='fighter-root'
+      >
+        <a-sphere material="color: blue; opacity: 0.5;"></a-plane>
+      </a-marker-->
+      <!-- TABLE  -->
+      <a-marker
+        type="pattern"
+        url="https://10.0.7.40:8080/markers/table/table-marker.patt"
+        size="0.048"
+        id="table-root"
+        dnd-table='legs: #top-left-leg, #top-right-leg, #bottom-right-leg, #bottom-left-leg, #human-fighter, #dwarf-paladin; tableCenter: #table-center'
+      >
+        <a-plane position='0 0 0' scale='10 10 10' color="green" rotation='-90 0 0'></a-plane>
+        <!--a-entity table-piece='marker: #fighter-root; table: #table-root'>
+            <a-box position='0 0 0' scale'1 1 1' color="red"></a-box>
+        </a-entity-->
+      </a-marker>
+      
+      <a-entity id='table-center' color="red">
+          <a-plane position='0 0 0' scale='10 10 10' color="green" rotation='-90 0 0'></a-plane>
+      </a-entity>
+      <!--  TABLE LEGS -->
+      <a-marker
+        type="pattern"
+        url="https://10.0.7.40:8080/markers/table-legs/top-left.patt"
+        size="0.048"
+        id='top-left-leg'
+      ><a-sphere material="color: blue; opacity: 0.5;"></a-plane></a-marker>
+      <a-marker
+        type="pattern"
+        url="https://10.0.7.40:8080/markers/table-legs/top-right.patt"
+        size="0.048"
+        id='top-right-leg'
+      ><a-sphere material="color: blue; opacity: 0.5;"></a-plane></a-marker>
+      <a-marker
+        type="pattern"
+        url="https://10.0.7.40:8080/markers/table-legs/bottom-right.patt"
+        size="0.048"
+        id='bottom-right-leg'
+      ><a-sphere material="color: blue; opacity: 0.5;"></a-plane></a-marker>
+      <a-marker
+        type="pattern"
+        url="https://10.0.7.40:8080/markers/table-legs/bottom-left.patt"
+        size="0.048"
+        id='bottom-left-leg'
+      ><a-sphere material="color: blue; opacity: 0.5;"></a-plane></a-marker>
+      <!--  TEST LEG -->
+      <a-marker
+        type="pattern"
+        url="https://10.0.7.40:8080/markers/human-fighter/human-fighter-marker.patt"
+        size="0.048"
+        id='human-fighter'
+      ><a-sphere material="color: blue; opacity: 0.5;"></a-plane></a-marker>
+      <a-marker
+        type="pattern"
+        url="https://10.0.7.40:8080/markers/dwarf-paladin/dwarf-paladin-marker2.patt"
+        size="0.064"
+        id='dwarf-paladin'
+      ><a-sphere material="color: blue; opacity: 0.5;"></a-plane></a-marker>
+
+      <a-entity camera></a-entity>
+    </a-scene>
+  </body>
+</html>
