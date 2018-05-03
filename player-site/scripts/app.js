@@ -43,6 +43,7 @@ const dndTable = {
 
     this.currentAnimationIndex = 0;
     this.knight = document.querySelector('#knight');
+    this.undead = document.querySelector('#undead');
     this.animations = [
       'clip: Bip001.001|Take 001|BaseLayer; crossFadeDuration: .3;',
       'clip: Bip001.001|Take 001|BaseLayer.002; crossFadeDuration: .3;',
@@ -53,6 +54,7 @@ const dndTable = {
     this.currentAnimationIndex = (this.currentAnimationIndex+1)%2;
     var nextData = this.animations[this.currentAnimationIndex];
     this.knight.setAttribute('animation-mixer', nextData);
+    this.undead.setAttribute('animation-mixer', nextData);
   },
 
   toggleRegistering: function() {
