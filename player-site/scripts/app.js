@@ -51,7 +51,7 @@ const dndTable = {
 
   changeAnimation: function() {
     this.currentAnimationIndex = (this.currentAnimationIndex+1)%2;
-    var nextData = animations[this.currentAnimationIndex];
+    var nextData = this.animations[this.currentAnimationIndex];
     this.knight.setAttribute('animation-mixer', nextData);
   },
 
