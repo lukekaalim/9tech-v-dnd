@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Augmented Dungeons and Dragons",
   "scripts": {
-    "start": "http-server ./player-site -S"
+    "start": "http-server ./ -S"
   },
   "repository": {
     "type": "git",
