@@ -37,7 +37,24 @@ const dndTable = {
     this.data.legElements = this.data.legs.map(legSelector => document.querySelector(legSelector));
     this.data.registerButton = document.getElementById('registerTableButton');
     this.data.registerButton.addEventListener('click', () => this.toggleRegistering());
+
+    this.data.toggleAnimationButton = document.getElementById('toggleAnimationButton');
+    this.data.toggleAnimationButton.addEventListener('click', () => this.changeAnimation());
+
+    this.currentAnimationIndex = 0;
+    this.knight = document.querySelector('#knight');
+    this.animations = [
+      'clip: Bip001.001|Take 001|BaseLayer; crossFadeDuration: .3;',
+      'clip: Bip001.001|Take 001|BaseLayer.002; crossFadeDuration: .3;',
+    ];
   },
+
+  changeAnimation: function() {
+    this.currentAnimationIndex = (this.currentAnimationIndex+1)%2;
+    var nextData = animations[this.currentAnimationIndex];
+    this.knight.setAttribute('animation-mixer', nextData);
+  },
+
   toggleRegistering: function() {
     this.data.registering = !this.data.registering;
     if (this.data.registering) {
@@ -79,12 +96,12 @@ const dndTable = {
       const center = this.supportingLegs
         .reduce((acc, curr) => acc.add(curr.object3D.position), new THREE.Vector3() )
         .divideScalar(this.supportingLegs.length);
-      
+
         this.supportingLegs.map(leg => {
         const quaternion = new THREE.Quaternion()
           .copy(leg.object3D.quaternion)
           .inverse();
-          
+
         const relativeToCenter = new THREE.Vector3()
           .copy(leg.object3D.position)
           .sub(center)
@@ -98,7 +115,7 @@ const dndTable = {
       });
       */
     }
-    
+
     const visibleAndSupportedLegElements = this.data.supportingLegs.filter(leg => {
       const tableLeg = leg.getAttribute('table-leg');
       return tableLeg && tableLeg.tableCenterOffset;
@@ -109,7 +126,7 @@ const dndTable = {
           .add(curr.getAttribute('table-leg').tableCenterOffset),
         new THREE.Vector3())
         .divideScalar(visibleAndSupportedLegElements.length);
-    
+
     this.data.tableCenter.object3D.position.copy(averagePosition);
     if(this.data.supportingLegs.length > 0) {
       this.data.tableCenter.object3D.quaternion.copy(this.data.supportingLegs[0].object3D.quaternion);
